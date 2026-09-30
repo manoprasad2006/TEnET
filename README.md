@@ -1,5 +1,8 @@
 # TenNet — Multi-Tenant Inventory Platform
 
+For a concise technical review, four-minute pitch, demo checklist, judge questions
+and final readiness checklist, see [docs/project-technical-review-and-pitch.md](D:/Desktop/TenNet/docs/project-technical-review-and-pitch.md).
+
 TenNet is an enterprise-grade multi-tenant inventory platform built with **ASP.NET Core 8**, **EF Core 8**, **SQLite**, **AWS S3 / MinIO**, and **React + TypeScript (Vite)**. It enforces strict discriminator-based isolation with fail-closed security, reflection-based global query filters, client-tamper-proof entity stamping, real-time database membership authorization, S3 tenant prefix partitioning, and security-hardened HTTP headers.
 
 ---

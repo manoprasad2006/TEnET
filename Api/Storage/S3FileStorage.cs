@@ -9,10 +9,12 @@ public sealed class S3FileStorage : IFileStorage
 {
     private readonly IAmazonS3 _s3Client;
     private readonly StorageOptions _options;
+    private readonly ILogger<S3FileStorage> _logger;
 
-    public S3FileStorage(IOptions<StorageOptions> options)
+    public S3FileStorage(IOptions<StorageOptions> options, ILogger<S3FileStorage> logger)
     {
         _options = options.Value;
+        _logger = logger;
         var config = new AmazonS3Config
         {
             RegionEndpoint = RegionEndpoint.GetBySystemName(_options.Region),
@@ -40,17 +42,27 @@ public sealed class S3FileStorage : IFileStorage
         string contentType,
         CancellationToken cancellationToken = default)
     {
-        var putRequest = new PutObjectRequest
+        try
         {
-            BucketName = _options.BucketName,
-            Key = key,
-            InputStream = stream,
-            ContentType = contentType,
-            AutoCloseStream = false
-        };
+            var putRequest = new PutObjectRequest
+            {
+                BucketName = _options.BucketName,
+                Key = key,
+                InputStream = stream,
+                ContentType = contentType,
+                AutoCloseStream = false
+            };
 
-        var response = await _s3Client.PutObjectAsync(putRequest, cancellationToken);
-        return new FileUploadResult(key, stream.Length, contentType);
+            _logger.LogInformation("Uploading object to S3: Bucket={Bucket}, Key={Key}, Size={Size}", _options.BucketName, key, stream.Length);
+            var response = await _s3Client.PutObjectAsync(putRequest, cancellationToken);
+            _logger.LogInformation("Successfully uploaded to S3: Key={Key}, Status={Status}", key, response.HttpStatusCode);
+            return new FileUploadResult(key, stream.Length, contentType);
+        }
+        catch (AmazonS3Exception ex)
+        {
+            _logger.LogError(ex, "AWS S3 upload error: [{ErrorCode} - {StatusCode}] {Message}", ex.ErrorCode, ex.StatusCode, ex.Message);
+            throw;
+        }
     }
 
     public async Task<FileDownloadResult?> DownloadAsync(

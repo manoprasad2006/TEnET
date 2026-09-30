@@ -96,10 +96,12 @@ builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(Stor
 var storageConfig = builder.Configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>();
 if (storageConfig != null && (!string.IsNullOrEmpty(storageConfig.AccessKey) || !string.IsNullOrEmpty(storageConfig.ServiceUrl)))
 {
+    Console.WriteLine($"[Storage] Configured S3FileStorage -> Bucket: '{storageConfig.BucketName}', Region: '{storageConfig.Region}'");
     builder.Services.AddSingleton<IFileStorage, S3FileStorage>();
 }
 else
 {
+    Console.WriteLine("[Storage] Configured InMemoryFileStorage (AWS S3 credentials not found at startup).");
     builder.Services.AddSingleton<IFileStorage, InMemoryFileStorage>();
 }
 
